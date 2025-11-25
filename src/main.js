@@ -5,12 +5,11 @@ const container = document.getElementById('game-container');
 const scoreBoard = document.getElementById('score-board');
 const refillBtn = document.getElementById('refill-btn');
 
-// --- 1. 오디오 설정 (모바일 호환성 강화) ---
+// --- 1. 오디오 설정 ---
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
 function playPopSound() {
-    // 모바일은 사용자 제스처 후 오디오 컨텍스트가 활성화되어야 함
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
@@ -18,7 +17,7 @@ function playPopSound() {
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    oscillator.type = 'triangle'; // 소리를 약간 더 둔탁하게(뽁뽁이 느낌)
+    oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(300 + Math.random() * 100, audioCtx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
 
@@ -32,30 +31,32 @@ function playPopSound() {
     oscillator.stop(audioCtx.currentTime + 0.15);
 }
 
-// --- 2. 뽁뽁이 생성 (화면 꽉 채우기) ---
+// --- 2. 뽁뽁이 생성 (수정됨) ---
 function createBubbles() {
     container.innerHTML = '';
 
     // 컨테이너 크기 계산
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+    // clientWidth가 0이면(아직 로딩중이면) window 크기를 대신 사용 (안전장치 1)
+    const containerWidth = container.clientWidth || window.innerWidth;
+    const containerHeight = container.clientHeight || (window.innerHeight - 200);
 
-    // 뽁뽁이 하나 크기 (CSS grid gap 포함 대략적 계산)
     const bubbleSize = 67; // 55px + gap 12px
 
     const cols = Math.floor(containerWidth / bubbleSize);
     const rows = Math.floor(containerHeight / bubbleSize);
 
-    // 화면을 꽉 채울 개수만큼만 생성
-    const totalBubbles = cols * rows;
+    let totalBubbles = cols * rows;
+
+    // 계산 결과가 0개면 강제로 30개라도 만들기 (안전장치 2)
+    if (totalBubbles <= 0 || isNaN(totalBubbles)) {
+        totalBubbles = 30;
+    }
 
     for (let i = 0; i < totalBubbles; i++) {
         const bubble = document.createElement('div');
         bubble.classList.add('bubble');
 
-        // Pointer Event 사용 (마우스/터치 통합, 반응속도 가장 빠름)
         bubble.addEventListener('pointerdown', (e) => {
-            // 멀티터치 등 이벤트 전파 방지
             e.preventDefault();
             popBubble(bubble);
         });
@@ -70,36 +71,32 @@ function popBubble(element) {
 
     element.classList.add('popped');
     score++;
-    scoreBoard.innerText = score; // 숫자만 깔끔하게 표시
+    scoreBoard.innerText = score;
 
     playPopSound();
 
-    // 모바일 햅틱 피드백 (지원 기기만)
     if (navigator.vibrate) navigator.vibrate(15);
-
-    // TODO: 서버 전송 로직 (배치 전송 권장)
-    // if (score % 10 === 0) sendScoreToServer(score);
 }
 
 // --- 4. 리필 및 초기화 ---
 function refillBubbles() {
     createBubbles();
-    // 리필 시 약간 더 긴 진동
     if (navigator.vibrate) navigator.vibrate(40);
 }
 
-// 화면 크기 바뀌면(가로모드 등) 다시 계산
+// 화면 크기 바뀌면 다시 계산
 window.addEventListener('resize', () => {
-    // 너무 잦은 리렌더링 방지 (Debounce)
     clearTimeout(window.resizeTimer);
     window.resizeTimer = setTimeout(createBubbles, 200);
 });
 
-// 초기 실행
-createBubbles();
+// [중요 수정] 브라우저가 레이아웃을 잡을 시간을 0.1초 줍니다.
+setTimeout(() => {
+    createBubbles();
+}, 100);
+
 refillBtn.addEventListener('click', refillBubbles);
 
-// iOS 사파리 오디오 잠금 해제용 (첫 터치 시 오디오 활성화)
 document.body.addEventListener('touchstart', function () {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
