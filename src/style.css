@@ -1,0 +1,133 @@
+/* 전체 레이아웃 */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* 모바일 UI 대응 */
+    height: 100vh;
+    /* 구형 브라우저용 */
+    height: 100dvh;
+    /* 모바일 주소창 대응 동적 높이 */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    /* 스크롤 완전 차단 */
+
+    /* 제스처 방지 */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+header {
+    flex-shrink: 0;
+    /* 높이 고정 */
+    width: 100%;
+    background: #fff;
+    padding: 10px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    z-index: 10;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+#score-board {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ff4757;
+    margin-top: 2px;
+}
+
+/* 뽁뽁이 컨테이너 */
+#game-container {
+    flex: 1;
+    /* 남은 공간 모두 차지 */
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+
+    display: grid;
+    /* 모바일 화면 너비에 맞춰 자동 조절 (최소 55px) */
+    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    grid-auto-rows: 55px;
+    /* 높이도 고정 */
+    gap: 12px;
+
+    align-content: center;
+    /* 세로 중앙 정렬 */
+    justify-content: center;
+}
+
+/* 뽁뽁이 디자인 */
+.bubble {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #dcdcdc);
+    border-radius: 50%;
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1), inset -2px -2px 4px rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    position: relative;
+
+    /* 터치 반응 속도 향상 */
+    touch-action: manipulation;
+}
+
+/* 눌렀을 때 (CSS로 즉각 반응) */
+.bubble:active {
+    transform: scale(0.92);
+    background: #eee;
+}
+
+/* 터진 상태 */
+.bubble.popped {
+    background: #e0e0e0;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transform: scale(0.95);
+    animation: popAnim 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popAnim {
+    0% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(0.95);
+    }
+}
+
+/* 하단 버튼 */
+#refill-btn {
+    flex-shrink: 0;
+    margin-bottom: 30px;
+    /* 아이폰 하단 바 여백 고려 */
+    background: #2ed573;
+    color: white;
+    border: none;
+    padding: 15px 50px;
+    /* 터치 영역 넓게 */
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+    z-index: 20;
+}
+
+#refill-btn:active {
+    transform: scale(0.95);
+    background: #26af61;
+}
